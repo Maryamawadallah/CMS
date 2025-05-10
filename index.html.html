@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e9f2f9;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .section {
+            display: none;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .appointment-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .appointment-card h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .status-pending {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .status-confirmed {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .status-cancelled {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .report-section {
+            margin-bottom: 30px;
+        }
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Patient Dashboard</h1>
+        </header>
+
+        <!-- Doctor Login Section -->
+        <section id="doctor-login" class="section active">
+            <h2>Doctor Login</h2>
+            <div class="form-group">
+                <label for="doctor-password">Password:</label>
+                <input type="password" id="doctor-password" placeholder="Enter your password">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="doctorLogin()">Login</button>
+                <button class="btn-secondary" onclick="showSection('patient-actions')">Cancel</button>
+            </div>
+        </section>
+
+        <!-- Patient Actions Section -->
+        <section id="patient-actions" class="section">
+            <h2>Patient Actions</h2>
+            <div class="button-group">
+                <button class="btn-primary" onclick="showSection('add-patient')">Add Patient</button>
+                <button class="btn-primary" onclick="showSection('book-appointment')">Book Appointment</button>
+                <button class="btn-primary" onclick="showPatientAppointments()">View Appointments</button>
+                <button class="btn-primary" onclick="showSection('cancel-appointment')">Cancel Appointment</button>
+                <button class="btn-secondary" onclick="showSection('doctor-login')">Save and Exit</button>
+            </div>
+        </section>
+
+        <!-- Doctor Menu Section -->
+        <section id="doctor-menu" class="section">
+            <h2>Doctor Menu</h2>
+            <div class="button-group">
+                <button class="btn-primary" onclick="showAllAppointments()">View Appointments</button>
+                <button class="btn-primary" onclick="showSection('generate-report')">Generate Report</button>
+                <button class="btn-secondary" onclick="logout()">Save and Exit</button>
+            </div>
+        </section>
+
+        <!-- Add Patient Section -->
+        <section id="add-patient" class="section">
+            <h2>Add New Patient</h2>
+            <div class="form-group">
+                <label for="patient-name">Full Name:</label>
+                <input type="text" id="patient-name" placeholder="Enter patient's full name">
+            </div>
+            <div class="form-group">
+                <label for="patient-dob">Date of Birth:</label>
+                <input type="date" id="patient-dob">
+            </div>
+            <div class="form-group">
+                <label for="patient-gender">Gender:</label>
+                <select id="patient-gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="patient-phone">Phone Number:</label>
+                <input type="text" id="patient-phone" placeholder="Enter phone number">
+            </div>
+            <div class="form-group">
+                <label for="patient-email">Email:</label>
+                <input type="email" id="patient-email" placeholder="Enter email address">
+            </div>
+            <div class="form-group">
+                <label for="patient-address">Address:</label>
+                <textarea id="patient-address" rows="3" placeholder="Enter full address"></textarea>
+            </div>
+            <div class="button-group">
+                <button class="btn-success" onclick="addPatient()">Save Patient</button>
+                <button class="btn-secondary" onclick="showSection('patient-actions')">Cancel</button>
+            </div>
+        </section>
+
+        <!-- Book Appointment Section -->
+        <section id="book-appointment" class="section">
+            <h2>Book New Appointment</h2>
+            <div class="form-group">
+                <label for="appointment-patient">Patient:</label>
+                <select id="appointment-patient">
+                    <option value="">Select Patient</option>
+                    <!-- Patients will be added here dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="appointment-date">Date:</label>
+                <input type="date" id="appointment-date">
+            </div>
+            <div class="form-group">
+                <label for="appointment-time">Time:</label>
+                <input type="time" id="appointment-time">
+            </div>
+            <div class="form-group">
+                <label for="appointment-reason">Reason:</label>
+                <textarea id="appointment-reason" rows="3" placeholder="Enter reason for appointment"></textarea>
+            </div>
+            <div class="button-group">
+                <button class="btn-success" onclick="bookAppointment()">Book Appointment</button>
+                <button class="btn-secondary" onclick="showSection('patient-actions')">Cancel</button>
+            </div>
+        </section>
+
+        <!-- View Appointments Section (Patient) -->
+        <section id="view-appointments-patient" class="section">
+            <h2>My Appointments</h2>
+            <div id="patient-appointments-list">
+                <!-- Appointments will be displayed here -->
+            </div>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="showSection('patient-actions')">Back</button>
+            </div>
+        </section>
+
+        <!-- View All Appointments Section (Doctor) -->
+        <section id="view-appointments-doctor" class="section">
+            <h2>All Appointments</h2>
+            <table id="all-appointments-table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Appointments will be added here dynamically -->
+                </tbody>
+            </table>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="showSection('doctor-menu')">Back</button>
+            </div>
+        </section>
+
+        <!-- Cancel Appointment Section -->
+        <section id="cancel-appointment" class="section">
+            <h2>Cancel Appointment</h2>
+            <div class="form-group">
+                <label for="cancel-appointment-select">Select Appointment to Cancel:</label>
+                <select id="cancel-appointment-select">
+                    <option value="">Select Appointment</option>
+                    <!-- Appointments will be added here dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cancel-reason">Reason for Cancellation:</label>
+                <textarea id="cancel-reason" rows="3" placeholder="Enter reason for cancellation"></textarea>
+            </div>
+            <div class="button-group">
+                <button class="btn-danger" onclick="cancelAppointment()">Confirm Cancellation</button>
+                <button class="btn-secondary" onclick="showSection('patient-actions')">Back</button>
+            </div>
+        </section>
+
+        <!-- Generate Report Section -->
+        <section id="generate-report" class="section">
+            <h2>Generate Report</h2>
+            <div class="report-section">
+                <h3>Appointments Summary</h3>
+                <div class="form-group">
+                    <label for="report-start-date">Start Date:</label>
+                    <input type="date" id="report-start-date">
+                </div>
+                <div class="form-group">
+                    <label for="report-end-date">End Date:</label>
+                    <input type="date" id="report-end-date">
+                </div>
+                <button class="btn-primary" onclick="generateAppointmentsReport()">Generate Appointments Report</button>
+            </div>
+            
+            <div class="report-section">
+                <h3>Patient Statistics</h3>
+                <button class="btn-primary" onclick="generatePatientStats()">Generate Patient Statistics</button>
+            </div>
+            
+            <div id="report-results">
+                <!-- Report results will be displayed here -->
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-secondary" onclick="showSection('doctor-menu')">Back</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Sample data storage (in a real app, this would be a database)
+        let patients = [
+            { id: 1, name: "John Doe", dob: "1985-05-15", gender: "Male", phone: "555-1234", email: "john@example.com", address: "123 Main St" },
+            { id: 2, name: "Jane Smith", dob: "1990-08-22", gender: "Female", phone: "555-5678", email: "jane@example.com", address: "456 Oak Ave" }
+        ];
+        
+        let appointments = [
+            { id: 1, patientId: 1, patientName: "John Doe", date: "2023-06-15", time: "10:00", reason: "Annual checkup", status: "Confirmed" },
+            { id: 2, patientId: 2, patientName: "Jane Smith", date: "2023-06-16", time: "14:30", reason: "Follow-up visit", status: "Pending" }
+        ];
+        
+        let nextPatientId = 3;
+        let nextAppointmentId = 3;
+        
+        // Current user session
+        let currentUser = null;
+
+        // DOM ready function
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the page
+            populatePatientDropdowns();
+        });
+
+        // Show a specific section and hide others
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Doctor login function
+        function doctorLogin() {
+            const password = document.getElementById('doctor-password').value;
+            
+            // In a real app, you would verify the password with a server
+            if (password === "doctor123") { // Default password for demo
+                currentUser = { role: "doctor" };
+                showSection('doctor-menu');
+                document.getElementById('doctor-password').value = "";
+            } else {
+                alert("Incorrect password. Please try again.");
+            }
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            showSection('doctor-login');
+        }
+
+        // Populate patient dropdowns in various forms
+        function populatePatientDropdowns() {
+            const patientSelects = [
+                document.getElementById('appointment-patient'),
+                document.getElementById('cancel-appointment-select')
+            ];
+            
+            patientSelects.forEach(select => {
+                // Clear existing options except the first one
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+                
+                // Add current patients
+                patients.forEach(patient => {
+                    const option = document.createElement('option');
+                    option.value = patient.id;
+                    option.textContent = patient.name;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Add a new patient
+        function addPatient() {
+            const name = document.getElementById('patient-name').value;
+            const dob = document.getElementById('patient-dob').value;
+            const gender = document.getElementById('patient-gender').value;
+            const phone = document.getElementById('patient-phone').value;
+            const email = document.getElementById('patient-email').value;
+            const address = document.getElementById('patient-address').value;
+            
+            if (!name || !dob || !gender || !phone || !email || !address) {
+                alert("Please fill in all fields");
+                return;
+            }
+            
+            const newPatient = {
+                id: nextPatientId++,
+                name,
+                dob,
+                gender,
+                phone,
+                email,
+                address
+            };
+            
+            patients.push(newPatient);
+            populatePatientDropdowns();
+            
+            // Clear the form
+            document.getElementById('add-patient').querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type !== 'button') field.value = '';
+            });
+            
+            alert("Patient added successfully!");
+            showSection('patient-actions');
+        }
+
+        // Book a new appointment
+        function bookAppointment() {
+            const patientId = parseInt(document.getElementById('appointment-patient').value);
+            const date = document.getElementById('appointment-date').value;
+            const time = document.getElementById('appointment-time').value;
+            const reason = document.getElementById('appointment-reason').value;
+            
+            if (!patientId || !date || !time || !reason) {
+                alert("Please fill in all fields");
+                return;
+            }
+            
+            const patient = patients.find(p => p.id === patientId);
+            
+            const newAppointment = {
+                id: nextAppointmentId++,
+                patientId,
+                patientName: patient.name,
+                date,
+                time,
+                reason,
+                status: "Pending"
+            };
+            
+            appointments.push(newAppointment);
+            
+            // Clear the form
+            document.getElementById('book-appointment').querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type !== 'button') field.value = '';
+            });
+            
+            alert("Appointment booked successfully!");
+            showSection('patient-actions');
+        }
+
+        // Show patient appointments
+        function showPatientAppointments() {
+            const container = document.getElementById('patient-appointments-list');
+            container.innerHTML = "";
+            
+            if (appointments.length === 0) {
+                container.innerHTML = "<p>No appointments found.</p>";
+            } else {
+                appointments.forEach(appt => {
+                    const card = document.createElement('div');
+                    card.className = 'appointment-card';
+                    
+                    const statusClass = `status-${appt.status.toLowerCase()}`;
+                    
+                    card.innerHTML = `
+                        <h3>Appointment #${appt.id}</h3>
+                        <p><strong>Date:</strong> ${appt.date} at ${appt.time}</p>
+                        <p><strong>Reason:</strong> ${appt.reason}</p>
+                        <p><strong>Status:</strong> <span class="${statusClass}">${appt.status}</span></p>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            }
+            
+            showSection('view-appointments-patient');
+        }
+
+        // Show all appointments (doctor view)
+        function showAllAppointments() {
+            const tbody = document.querySelector('#all-appointments-table tbody');
+            tbody.innerHTML = "";
+            
+            if (appointments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6">No appointments found.</td></tr>`;
+            } else {
+                appointments.forEach(appt => {
+                    const statusClass = `status-${appt.status.toLowerCase()}`;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${appt.patientName}</td>
+                        <td>${appt.date}</td>
+                        <td>${appt.time}</td>
+                        <td>${appt.reason}</td>
+                        <td><span class="${statusClass}">${appt.status}</span></td>
+                        <td>
+                            <button class="btn-primary" onclick="updateAppointmentStatus(${appt.id}, 'Confirmed')">Confirm</button>
+                            <button class="btn-danger" onclick="updateAppointmentStatus(${appt.id}, 'Cancelled')">Cancel</button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            }
+            
+            showSection('view-appointments-doctor');
+        }
+
+        // Update appointment status
+        function updateAppointmentStatus(appointmentId, newStatus) {
+            const appointment = appointments.find(a => a.id === appointmentId);
+            if (appointment) {
+                appointment.status = newStatus;
+                showAllAppointments();
+                alert(`Appointment #${appointmentId} status updated to ${newStatus}`);
+            }
+        }
+
+        // Cancel an appointment (patient view)
+        function cancelAppointment() {
+            const appointmentId = parseInt(document.getElementById('cancel-appointment-select').value);
+            const reason = document.getElementById('cancel-reason').value;
+            
+            if (!appointmentId || !reason) {
+                alert("Please select an appointment and provide a reason");
+                return;
+            }
+            
+            const appointment = appointments.find(a => a.id === appointmentId);
+            if (appointment) {
+                appointment.status = "Cancelled";
+                
+                // Clear the form
+                document.getElementById('cancel-appointment').querySelectorAll('select, textarea').forEach(field => {
+                    field.value = '';
+                });
+                
+                alert(`Appointment #${appointmentId} has been cancelled.`);
+                showSection('patient-actions');
+            }
+        }
+
+        // Generate appointments report
+        function generateAppointmentsReport() {
+            const startDate = document.getElementById('report-start-date').value;
+            const endDate = document.getElementById('report-end-date').value;
+            
+            if (!startDate || !endDate) {
+                alert("Please select both start and end dates");
+                return;
+            }
+            
+            const filteredAppointments = appointments.filter(appt => {
+                return appt.date >= startDate && appt.date <= endDate;
+            });
+            
+            const reportResults = document.getElementById('report-results');
+            reportResults.innerHTML = "";
+            
+            if (filteredAppointments.length === 0) {
+                reportResults.innerHTML = `<p>No appointments found between ${startDate} and ${endDate}.</p>`;
+                return;
+            }
+            
+            // Count by status
+            const statusCounts = {
+                Pending: 0,
+                Confirmed: 0,
+                Cancelled: 0
+            };
+            
+            filteredAppointments.forEach(appt => {
+                statusCounts[appt.status]++;
+            });
+            
+            const reportHTML = `
+                <h3>Appointments Report (${startDate} to ${endDate})</h3>
+                <p>Total Appointments: ${filteredAppointments.length}</p>
+                <ul>
+                    <li>Pending: ${statusCounts.Pending}</li>
+                    <li>Confirmed: ${statusCounts.Confirmed}</li>
+                    <li>Cancelled: ${statusCounts.Cancelled}</li>
+                </ul>
+                <h4>Appointment Details</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredAppointments.map(appt => `
+                            <tr>
+                                <td>${appt.patientName}</td>
+                                <td>${appt.date}</td>
+                                <td>${appt.time}</td>
+                                <td>${appt.reason}</td>
+                                <td>${appt.status}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            reportResults.innerHTML = reportHTML;
+        }
+
+        // Generate patient statistics
+        function generatePatientStats() {
+            const reportResults = document.getElementById('report-results');
+            reportResults.innerHTML = "";
+            
+            if (patients.length === 0) {
+                reportResults.innerHTML = `<p>No patient data available.</p>`;
+                return;
+            }
+            
+            // Count by gender
+            const genderCounts = {
+                Male: 0,
+                Female: 0,
+                Other: 0
+            };
+            
+            patients.forEach(patient => {
+                genderCounts[patient.gender]++;
+            });
+            
+            // Age calculation
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            const currentDay = now.getDate();
+            
+            let totalAge = 0;
+            patients.forEach(patient => {
+                const dob = new Date(patient.dob);
+                let age = currentYear - dob.getFullYear();
+                
+                // Adjust if birthday hasn't occurred yet this year
+                if (currentMonth < dob.getMonth() || 
+                    (currentMonth === dob.getMonth() && currentDay < dob.getDate())) {
+                    age--;
+                }
+                
+                totalAge += age;
+            });
+            const averageAge = (totalAge / patients.length).toFixed(1);
+            
+            const reportHTML = `
+                <h3>Patient Statistics</h3>
+                <p>Total Patients: ${patients.length}</p>
+                <p>Average Age: ${averageAge} years</p>
+                <h4>Gender Distribution</h4>
+                <ul>
+                    <li>Male: ${genderCounts.Male}</li>
+                    <li>Female: ${genderCounts.Female}</li>
+                    <li>Other: ${genderCounts.Other}</li>
+                </ul>
+                <h4>Patient List</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Date of Birth</th>
+                            <th>Gender</th>
+                            <th>Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${patients.map(patient => `
+                            <tr>
+                                <td>${patient.name}</td>
+                                <td>${patient.dob}</td>
+                                <td>${patient.gender}</td>
+                                <td>${patient.phone}<br>${patient.email}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            reportResults.innerHTML = reportHTML;
+        }
+    </script>
+</body>
+</html>
