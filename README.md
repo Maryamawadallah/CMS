@@ -4,7 +4,7 @@ This is a **Clinic Management System** built entirely in **C++**, implementing *
 
 ---
 
-## 🚀 Features
+##  Features:
 
 - **Patient Registration** with auto-generated unique ID.
 - **Appointment Booking, Removal, Updating, and Viewing**.
@@ -18,7 +18,7 @@ This is a **Clinic Management System** built entirely in **C++**, implementing *
 
 ---
 
-## 💡 Technical Overview
+##  Technical Overview:
 
 - **Class Design**:
   - `Person` (base class) → `Patient` (derived)
